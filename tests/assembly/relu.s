@@ -1,13 +1,13 @@
 .globl relu
 
 .text
-    # ==========================================
+    # ============================================
     # Arguments:
     #   a0: address of matrix
     #   a1: number of elements in the matrix (n)
     # Returns:
     #   a0: relu(a0)
-    # ==========================================
+    # ============================================
 relu:
     # Prologue
     addi sp, sp, -16
@@ -41,8 +41,6 @@ end_relu:
     # Epilogue
     lw ra, 12(sp)
     lw s0, 8(sp)
-    lw s1, 4(sp)
-    lw s2, 0(sp)
     addi sp, sp, 16
     
     ret
