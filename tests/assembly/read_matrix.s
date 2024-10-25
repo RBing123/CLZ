@@ -19,27 +19,61 @@ read_matrix:
     mv s1, a1      # s1 = matrix pointer
     mv s2, a2      # s2 = number of elements
 
+    # check malloc
+    beqz s1, malloc_error
+
     # open file
+    mv a0, s0      # file name
     li a1, 0       # read mode = 0
     li a7, 1024    # syscall: open file
     ecall
 
-    # error check
-    bltz a0, read_error
-    mv t0, a0      # data descripter
+    # fopen error check
+    bltz a0, fopen_error
+    mv s3, a0      # file descripter
 
     # read matrix data
-    mv a0, t0      # data descripter
+    mv a0, s3      # file descripter
     mv a1, s1      # buffer address
-    li a2, 4       # 4 bytes per integer
-    mul a2, a2, s2 # total bytes needs to store
+    li t0, 4       # 4 bytes per integer
+    mul a2, s2, t0 # total bytes needs to store
     li a7, 63      # syscall: read file
     ecall
+
+    # fread error check
+    blt a0, a2, fread_error
 
     # close file
     mv a0, t0
     li a7, 57      # syscall: close file
     ecall
+
+    # fclose error check
+    bltz a0, fclose_error
+
+    # return successfully
+    mv a0, s1 
+    j read_done
+
+malloc_error:
+    li a0, 48      # Malloc error
+    j exit
+
+fopen_error:
+    li a0, 50      # fopen error
+    j exit
+
+fread_error:
+    mv a0, s3      # close
+    li a7, 57
+    ecall
+    li a0, 51      # fread error
+    j exit
+
+fclose_error:
+    li a0, 52      # fclose error
+    j exit
+
 read_done:
     # Epilogue
     lw ra, 28(sp)
