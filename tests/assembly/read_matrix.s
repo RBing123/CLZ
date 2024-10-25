@@ -40,3 +40,15 @@ read_matrix:
     mv a0, t0
     li a7, 57      # syscall: close file
     ecall
+read_done:
+    # Epilogue
+    lw ra, 28(sp)
+    lw s0, 24(sp)
+    lw s1, 20(sp)
+    lw s2, 16(sp)
+    addi sp, sp, 32
+    ret
+
+read_error:
+    li a0, -1      # error code
+    j read_done
