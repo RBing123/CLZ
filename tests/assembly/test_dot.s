@@ -5,7 +5,7 @@
     result_msg: .asciiz "The dot product is: "
     newline:    .asciiz "\n"
 
-.global main
+.globl main
 .text
 main:
     # Prologue
