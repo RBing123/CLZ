@@ -1,8 +1,8 @@
 .data 
     matrix: .word 5, -3, 0, 2, -1
     n: .word 5
-    newline: .asciz "\n"
-    space: .asciz " "
+    newline: .asciiz "\n"
+    space: .asciiz " "
 .text
 main:
     # Prologue
