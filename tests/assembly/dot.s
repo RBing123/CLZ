@@ -28,7 +28,7 @@ dot_loop:
     lw t2, 0(a1)    # t2: vector2[i]
 
     mul t5, t1, t2  # t5: vector1[i] * vector2[i]
-    addi t0, t0, t5 # result += t5
+    add t0, t0, t5 # result += t5
 
     # refresh pointer and counter
     addi a0, a0, 4
