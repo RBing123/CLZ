@@ -4,7 +4,7 @@
    n0: .word 9                                  # 向量長度
    
    # 輸出訊息
-   msg1: .asciiz "Test case: regular vector\nArgmax result: "
+   msg1: .asciiz "Argmax result: "
    newline: .asciiz "\n"
 
 .text
