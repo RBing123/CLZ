@@ -18,7 +18,7 @@ main:
     lw a2, size        # a2 = size
 
     # invoke dot.s
-    jal ra, dot        # a0 = save result
+    jal dot        # a0 = save result
 
     # save result
     mv t0, a0
