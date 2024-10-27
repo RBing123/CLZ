@@ -2,8 +2,8 @@
     vector1: .word 1, 2, 3
     vector2: .word 1, 3, 5
     size:    .word 3
-    result_msg: .string "The dot product is: "
-    newline:    .string "\n"
+    result_msg: .asciiz "The dot product is: "
+    newline:    .asciiz "\n"
 
 .global main
 
