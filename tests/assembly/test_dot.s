@@ -9,10 +9,10 @@
 
 main:
     # Prologue
-    addi sp, sp, -8
+    addi sp, sp, -4
     sw ra, 0(sp)
 
-    # Arguments
+    # Arguments4
     la a0, vector1     # a0 = vector1 address
     la a1, vector2     # a1 = vector2 address
     lw a2, size        # a2 = size
