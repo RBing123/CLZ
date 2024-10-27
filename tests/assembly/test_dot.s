@@ -6,7 +6,7 @@
     newline:    .asciiz "\n"
 
 .global main
-
+.text
 main:
     # Prologue
     addi sp, sp, -4
