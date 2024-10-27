@@ -10,7 +10,7 @@
 main:
     # Prologue
     addi sp, sp, -8
-    sd ra, 0(sp)
+    sw ra, 0(sp)
 
     # Arguments
     la a0, vector1     # a0 = vector1 address
@@ -39,7 +39,7 @@ main:
     ecall
 
     # Epilogue
-    ld ra, 0(sp)
+    lw ra, 0(sp)
     addi sp, sp, 8
              
     ret
