@@ -1,63 +1,41 @@
-.data 
-    matrix: .word 5, -3, 0, 2, -1
-    n: .word 5
-    newline: .asciiz "\n"
-    space: .asciiz " "
+.import relu.s
+.import utils.s
+
+# Set vector values for testing
+.data
+m0: .word 1 -2 3 -4 5 -6 7 -8 9 # MAKE CHANGES HERE
+
+
 .text
+# main function for testing
 main:
-    # Prologue
-    addi sp, sp, -16
-    sw ra, 12(sp)
-    sw s0, 8(sp)
-    sw s1, 4(sp)
-    sw s2, 0(sp)
-    
-    # load data
-    la a0, matrix
-    lw a1, n
-    mv s0, a0       # s0 = matrix address
-    mv s1, a1       # s1 = n
-    
-    # invoke relu function
-    jal relu
+    # Load address of m0
+    la s0 m0
 
-    # print
-    li s2, 0
-print_loop:
-    bge s2, s1, print_done   # if (i >= n) goto print_done
-    
-    # load matrix element
-    slli t0, s2, 2          # t0 = i * 4
-    add t0, s0, t0          # t0 = matrix + i * 4
-    lw t1, 0(t0)            # t1 = matrix[i]
-    
-    # printout number (syscall)
-    mv a0, t1              # a0: element of matrix
-    li a7, 1               # syscall 1 print insteger
-    ecall
-    
-    # space (syscall)
-    la a0, space           # load space address
-    li a7, 4               # syscall 4 print string
-    ecall
-    
-    addi s2, s2, 1        # i++
-    j print_loop
+    # Set dimensions of m0
+    li s1 3 # MAKE CHANGES HERE
+    li s2 3 # MAKE CHANGES HERE
 
-print_done:
-    #  (syscall)
-    la a0, newline         # newline address
-    li a7, 4               # syscall 4 print
-    ecall
+    # Print m0 before running relu
+    mv a0 s0
+    mv a1 s1
+    mv a2 s2
+    jal print_int_array
 
-    # Epilogue
-    lw ra, 12(sp)
-    lw s0, 8(sp)
-    lw s1, 4(sp)
-    lw s2, 0(sp)
-    addi sp, sp, 16
-    
-    # Exit program (syscall)
-    li a0, 0              # return 0
-    li a7, 10             # syscall 10 exit
-    ecall    
+    # Print newline
+    li a1 '\n'
+    jal print_char
+
+    # Call relu function
+    mv a0 s0
+    mul a1 s1 s2 # Convert dimensions to total number of elements
+    jal ra relu
+
+    # Print m0 after running relu
+    mv a0 s0
+    mv a1 s1
+    mv a2 s2
+    jal print_int_array
+
+    # Exit
+    jal exit
