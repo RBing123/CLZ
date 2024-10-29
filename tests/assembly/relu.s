@@ -1,46 +1,36 @@
 .globl relu
 
 .text
-    # ============================================
-    # Arguments:
-    #   a0: address of matrix
-    #   a1: number of elements in the matrix (n)
-    # Returns:
-    #   a0: relu(a0)
-    # ============================================
+# ==============================================================================
+# FUNCTION: Performs an inplace element-wise ReLU on an array of ints
+# Arguments:
+# 	a0 is the pointer to the array
+#	a1 is the # of elements in the array
+# Returns:
+#	None
+# ==============================================================================
 relu:
     # Prologue
-    addi sp, sp, -16
-    sw ra, 12(sp)
-    sw s0, 8(sp)
-    sw s1, 4(sp)
-    sw s2, 0(sp)
 
-    mv s0, a0               # s0: Save original a0 (matrix start address)
-    li t0, 0                # t0: counter
+    add t0, x0, x0              # t0 <- 0
+loop_start:
+    beq t0, a1, loop_end        # for t0 from 0 to a1-1
+    addi t2, x0, 4
+    mul t1, t0, t2              # t1 <- t0 * sizeof(int)
+    add t2, t1, a0              # t2 <- a0 + t0 * sizeof(int)
+    lw t3, 0(t2)                # t3 <- a0[t0]
+    bge t3, x0, loop_continue   # if t3 > 0, jump to loop_continue
+    add t3, x0, x0              # t3 <- 0
+    sw t3, 0(t2)                # a0[t0] <- t3
 
-calculate_relu:    
-    bge t0, a1, end_relu    # If we've processed n elements, end loop
+loop_continue:
+    addi t0, t0, 1              # t0 <- t0 + 1
+    j loop_start
 
-    lw t1, 0(a0)            # t1: element of the matrix
-    ble t1, x0, neg_value
-    sw t1, 0(a0)
-    j next_element
+loop_end:
 
-neg_value:
-    sw x0, 0(a0)            # if ele. is neg. store 0
 
-next_element:
-    addi a0, a0, 4          # move to next element
-    addi t0, t0, 1          # counter++
-    j calculate_relu        
-
-end_relu:
-    mv a0, s0               # Restore original matrix start address into a0
-    
     # Epilogue
-    lw ra, 12(sp)
-    lw s0, 8(sp)
-    addi sp, sp, 16
+
     
-    ret
+	ret
