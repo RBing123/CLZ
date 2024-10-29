@@ -1,49 +1,40 @@
 .globl dot
 
 .text
-# ==============================================================
+# =======================================================
 # Arguments:
-# a0: the address of vector 1
-# a1: the address of vector 2
-# a2: vector length
-# Return:
-# a0: return the result of vector 1 inner product with vector 2
-# ==============================================================
+#   a0 is the pointer to the start of v0
+#   a1 is the pointer to the start of v1
+#   a2 is the length of the vectors
+#   a3 is the stride of v0
+#   a4 is the stride of v1
+# Returns:
+#   a0 is the dot product of v0 and v1
+# =======================================================
 dot:
+
     # Prologue
-    addi sp, sp, -12
-    sw ra, 8(sp)
-    sw s0, 4(sp)
-    sw s1, 0(sp)
+    mv t0, a0                # t0 <- v0
+    add a0, x0, x0           # product <- 0
+    add t1, x0, x0           # counter <- 0
+    addi t2, x0, 4
+    mul a3, a3, t2
+    mul a4, a4, t2
+loop_start:
+    beq t1, a2, loop_end     # for counter from 0 to length-1
+    mul t2, t1, a3
+    mul t3, t1, a4
+    add t4, t0, t2           # t4 <- v0 + counter * stride0 * sizeof(int)
+    add t5, a1, t3           # t5 <- v1 + counter * stride1 * sizeof(int)
+    lw t4, 0(t4)             # t4 <- v0[counter]
+    lw t5, 0(t5)             # t5 <- v1[counter]
+    mul t4, t4, t5
+    add a0, a0, t4           # product <- product + v0[counter] * v1[counter]
+    addi t1, t1, 1           # counter <- counter + 1
+    j loop_start
 
-    # intialize
-    li t0, 0        # t0: save result
-    li t4, 0        # t4: counter
-
-dot_loop:
-    beq t4, a2, dot_done
-
-    # load vector element
-    lw t1, 0(a0)    # t1: vector1[i]
-    lw t2, 0(a1)    # t2: vector2[i]
-
-    mul t5, t1, t2  # t5: vector1[i] * vector2[i]
-    add t0, t0, t5 # result += t5
-
-    # refresh pointer and counter
-    addi a0, a0, 4
-    addi a1, a1, 4
-    addi t4, t4, 1
-
-    j dot_loop
-
-dot_done:
-    mv a0, t0
-
+loop_end:
     # Epilogue
-    lw ra, 8(sp)
-    lw s0, 4(sp)
-    lw s1, 0(sp)
-    addi sp, sp, 12
 
+    
     ret
