@@ -1,80 +1,103 @@
 .globl write_matrix
+
 .text
 # ==============================================================================
+# FUNCTION: Writes a matrix of integers into a binary file
+#   If any file operation fails or doesn't write the proper number of bytes,
+#   exit the program with exit code 1.
+# FILE FORMAT:
+#   The first 8 bytes of the file will be two 4 byte ints representing the
+#   numbers of rows and columns respectively. Every 4 bytes thereafter is an
+#   element of the matrix in row-major order.
 # Arguments:
-#   a0 (char*) pointer to output filename
-#   a1 (int*) pointer to matrix
-#   a2 (int) number of elements to write
+#   a0 is the pointer to string representing the filename
+#   a1 is the pointer to the start of the matrix in memory
+#   a2 is the number of rows in the matrix
+#   a3 is the number of columns in the matrix
+# Returns:
+#   None
 # ==============================================================================
 write_matrix:
+
     # Prologue
-    addi sp, sp, -32
-    sw ra, 28(sp)
-    sw s0, 24(sp)
-    sw s1, 20(sp)
-    sw s2, 16(sp)
+    addi sp, sp, -28
+    sw s0, 0(sp)                # the pointer to the start of the matrix
+    sw s1, 4(sp)                # the number of rows in the matrix
+    sw s2, 8(sp)                # the number of columns in the matrix
+    sw s3, 12(sp)               # the returned file descriptor
+    sw s4, 16(sp)               # the # of elements
+    sw s5, 20(sp)               # counter for elements
+    sw ra, 24(sp)
 
-    # save register
-    mv s0, a0      # s0 = filename
-    mv s1, a1      # s1 = matrix pointer
-    mv s2, a2      # s2 = number of elements
+    add s0, a1, x0
+    add s1, a2, x0
+    add s2, a3, x0
+    blt s1, x0, eof_or_error
+    blt s2, x0, eof_or_error
 
-    # open file (create/truncate)
-    mv a0, s0      # file name
-    li a1, 1       # write mode = 1
-    li a7, 1024    # syscall: open file
-    ecall
+    add a1, a0, x0
+    addi a2, x0, 1              # fopen("filename", "-w")
+    call fopen
+    addi t0, x0, -1
+    beq t0, a0, eof_or_error    # if file descriptor (fp) is -1: exit with exit code 1
+
+    add s3, a0, x0              # save the returned file descriptor
+
+    add a1, s3, x0
+    addi sp, sp, -4
+    sw s1, 0(sp)
+    add a2, sp, x0
+    addi sp, sp, 4
+    addi a3, x0, 1
+    addi a4, x0, 4
+    call fwrite                 # fwrite(fp, row, 1, 4)
+    bne a0, a3, eof_or_error    # if a0 is NOT equal to a3: exit with exit code 1
+
+    add a1, s3, x0
+    addi sp, sp, -4
+    sw s2, 0(sp)
+    add a2, sp, x0
+    addi sp, sp, 4
+    addi a3, x0, 1
+    addi a4, x0, 4
+    call fwrite                 # fwrite(fp, column, 1, 4)
+    bne a0, a3, eof_or_error    # if a0 is NOT equal to a3: exit with exit code 1
+
+    mul s4, s1, s2              # s4 <- row*column
+    add s5, x0, x0              # s5 is the counter for elements
+
+write_entry:
+    bgeu s5, s4, finish
+    add a1, s3, x0
+    add a2, s5, x0
+    addi t0, x0, 4
+    mul a2, t0, a2
+    add a2, a2, s0
+    addi a3, x0, 1
+    addi a4, x0, 4
+    call fwrite                 # fwrite(fp, element, 1, 4)
+    bne a0, a3, eof_or_error    # if a0 is NOT equal to a3: exit with exit code 1
+    addi s5, s5, 1
+    j write_entry
+
+finish:
+    add a1, s3, x0
+    call fclose                 # fclose(fp)
+    bne a0, x0, eof_or_error
     
-    # check fopen error
-    bltz a0, write_open_error
-    mv s3, a0      # save file descriptor
-
-    # write matrix
-    mv a0, s3      # file descriptor
-    mv a1, s1      # buffer address
-    li t0, 4       # 4 bytes per integer
-    mul a2, s2, t0 # total write bytes
-    li a7, 64      # syscall: writ back to file
-    ecall
-
-    # check fwrite error
-    bltz a0, a2, write_error
-
-    # close file
-    mv a0, s3
-    li a7, 57      # syscall: close file
-    ecall
-    
-    # check fclose error
-    bltz a0, close_error
-
-    # return successfully
-    mv a0, s1
-    j write_done
-
-write_open_error:
-    li a0, 53      # fopen error
-    j exit
-
-write_error:
-    mv a0, s3      # close file
-    li a7, 57
-    ecall
-    li a0, 54      # fwrite error
-    j exit
-
-close_error:
-    li a0, 55      # fclose error
-    j exit
-
-write_done:
     # Epilogue
-    lw ra, 28(sp)
-    lw s0, 24(sp)
-    lw s1, 20(sp)
-    lw s2, 16(sp)
-    addi sp, sp, 32
+
+    lw s0, 0(sp)
+    lw s1, 4(sp)
+    lw s2, 8(sp)
+    lw s3, 12(sp)
+    lw s4, 16(sp)
+    lw s5, 20(sp)
+    lw ra, 24(sp)
+    addi sp, sp, 28
+
     ret
-exit:
-    li a7, 93      # syscall: exit
-    ecall
+
+eof_or_error:
+    li a1 1
+    jal exit2
