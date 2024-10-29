@@ -1,45 +1,36 @@
+.import dot.s
+.import utils.s
+
+# Set vector values for testing
 .data
-    vector1: .word 1, 2, 3
-    vector2: .word 1, 3, 5
-    size:    .word 3
-    result_msg: .asciiz "The dot product is: "
-    newline:    .asciiz "\n"
+vector0: .word 1 2 3 4 5 6 7 8 9        # MAKE CHANGE HERE
+vector1: .word 1 2 3 4 5 6 7 8 9        # MAKE CHANGE HERE
 
-.globl main
+
 .text
+# main function for testing
 main:
-    # Prologue
-    addi sp, sp, -4
-    sw ra, 0(sp)
+    # Load vector addresses into registers
+    la s0 vector0
+    la s1 vector1
 
-    # Arguments4
-    la a0, vector1     # a0 = vector1 address
-    la a1, vector2     # a1 = vector2 address
-    lw a2, size        # a2 = size
+    # Set vector attributes
+    add a0, s0, x0
+    add a1, s1, x0
+    addi a2, x0, 3                      # MAKE CHANGE HERE
+    addi a3, x0, 1
+    addi a4, x0, 2
+    # Call dot function
+    jal ra, dot
 
-    # invoke dot.s
-    jal dot        # a0 = save result
 
-    # save result
-    mv t0, a0
+    # Print integer result
+    mv a1, a0
+    jal ra, print_int
 
-    # print out message
-    li a7, 4           
-    la a0, result_msg
-    ecall
+    # Print newline
+    li a1, '\n'
+    jal ra print_char
 
-    # print out result
-    li a7, 1           
-    mv a0, t0          
-    ecall
-
-    # print out newline
-    li a7, 4
-    la a0, newline
-    ecall
-
-    # Epilogue
-    lw ra, 0(sp)
-    addi sp, sp, 8
-             
-    ret
+    # Exit
+    jal exit
